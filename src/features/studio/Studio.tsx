@@ -1,20 +1,13 @@
 "use client";
 import { useState } from "react";
-import { type Campaign, type ContentItem, type ContentKind } from "./types";
-import { saveContent as persistContent, saveCampaign as persistCampaign } from "./actions";
-import { useRouter } from "next/navigation";
-import { validateCampaign, validateContent, youtubeEmbed } from "./validation";
-const field = {
-  display: "block",
-  width: "100%",
-  background: "#142235",
-  color: "#f1f6ff",
-  border: "1px solid #53677d",
-  borderRadius: 8,
-  padding: 10,
-  marginTop: 6,
-} as const;
+import CampaignEditor from "./CampaignEditor";
+import ContentEditor from "./ContentEditor";
+import type { Campaign, ContentItem } from "./types";
 
+type Tab = "content" | "campaigns";
+
+// Records are loaded on the server (src/features/studio/repository.ts) and
+// passed in. After a save, router.refresh() re-renders with fresh data.
 export default function Studio({
   initialContent,
   initialCampaigns,
@@ -22,86 +15,14 @@ export default function Studio({
   initialContent: ContentItem[];
   initialCampaigns: Campaign[];
 }) {
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"content" | "campaigns">("content");
-  const content = initialContent;
-  const campaigns = initialCampaigns;
-  const [editing, setEditing] = useState<ContentItem>({
-    id: "",
-    title: "",
-    kind: "video",
-    pillar: "move",
-    description: "",
-    url: "",
-    status: "draft",
-  });
-  const [campaign, setCampaign] = useState<Campaign>({
-    id: "",
-    title: "",
-    startDate: "",
-    endDate: "",
-    audience: "all",
-    status: "draft",
-    notificationText: "",
-    contentIds: [],
-  });
+  const [tab, setTab] = useState<Tab>("content");
   const [message, setMessage] = useState("");
-  const saveContent = async () => {
-    if (busy) return;
-    const error = validateContent(editing);
-    if (error) {
-      setMessage(error);
-      return;
-    }
-    setBusy(true);
-    try {
-      const result = await persistContent(editing);
-      setMessage(result.message);
-      if (result.ok) {
-        setEditing({
-          id: "",
-          title: "",
-          kind: "video",
-          pillar: "move",
-          description: "",
-          url: "",
-          status: "draft",
-        });
-        router.refresh();
-      }
-    } finally {
-      setBusy(false);
-    }
-  };
-  const saveCampaign = async () => {
-    if (busy) return;
-    const error = validateCampaign(campaign);
-    if (error) {
-      setMessage(error);
-      return;
-    }
-    setBusy(true);
-    try {
-      const result = await persistCampaign(campaign);
-      setMessage(result.message);
-      if (result.ok) {
-        setCampaign({
-          id: "",
-          title: "",
-          startDate: "",
-          endDate: "",
-          audience: "all",
-          status: "draft",
-          notificationText: "",
-          contentIds: [],
-        });
-        router.refresh();
-      }
-    } finally {
-      setBusy(false);
-    }
-  };
+
+  function switchTab(next: Tab) {
+    setTab(next);
+    setMessage("");
+  }
+
   return (
     <div>
       <div className="top">
@@ -115,19 +36,15 @@ export default function Studio({
       <div style={{ display: "flex", gap: 10, margin: "22px 0" }}>
         <button
           className="btn"
-          onClick={() => {
-            setTab("content");
-            setMessage("");
-          }}
+          aria-pressed={tab === "content"}
+          onClick={() => switchTab("content")}
         >
           Content library
         </button>
         <button
           className="btn"
-          onClick={() => {
-            setTab("campaigns");
-            setMessage("");
-          }}
+          aria-pressed={tab === "campaigns"}
+          onClick={() => switchTab("campaigns")}
         >
           Campaign planner
         </button>
@@ -138,205 +55,9 @@ export default function Studio({
         </p>
       )}
       {tab === "content" ? (
-        <div className="grid">
-          <section className="card">
-            <h3>{editing.id ? "Edit" : "Add"} content</h3>
-            <label>
-              Title
-              <input
-                style={field}
-                value={editing.title}
-                onChange={(e) => setEditing({ ...editing, title: e.target.value })}
-              />
-            </label>
-            <label>
-              Type
-              <select
-                style={field}
-                value={editing.kind}
-                onChange={(e) => setEditing({ ...editing, kind: e.target.value as ContentKind })}
-              >
-                {["video", "recipe", "article", "activity"].map((x) => (
-                  <option key={x}>{x}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Pillar
-              <select
-                style={field}
-                value={editing.pillar}
-                onChange={(e) =>
-                  setEditing({ ...editing, pillar: e.target.value as ContentItem["pillar"] })
-                }
-              >
-                {["move", "nourish", "thrive"].map((x) => (
-                  <option key={x}>{x}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Description
-              <textarea
-                style={field}
-                rows={3}
-                value={editing.description}
-                onChange={(e) => setEditing({ ...editing, description: e.target.value })}
-              />
-            </label>
-            <label>
-              YouTube URL or reference link
-              <input
-                style={field}
-                value={editing.url}
-                onChange={(e) => setEditing({ ...editing, url: e.target.value })}
-              />
-            </label>
-            <label>
-              Status
-              <select
-                style={field}
-                value={editing.status}
-                onChange={(e) =>
-                  setEditing({ ...editing, status: e.target.value as ContentItem["status"] })
-                }
-              >
-                <option>draft</option>
-                <option>published</option>
-              </select>
-            </label>
-            <p>
-              <button className="btn" disabled={busy} onClick={saveContent}>
-                Save content
-              </button>
-            </p>
-            {editing.kind === "video" && youtubeEmbed(editing.url) && (
-              <iframe
-                title="Video preview"
-                src={youtubeEmbed(editing.url)!}
-                style={{ width: "100%", aspectRatio: "16/9", border: 0 }}
-                allowFullScreen
-                referrerPolicy="strict-origin-when-cross-origin"
-              />
-            )}
-          </section>
-          <section className="card">
-            <h3>Content items ({content.length})</h3>
-            {content.map((item) => (
-              <div key={item.id} style={{ padding: "12px 0", borderBottom: "1px solid #41546a" }}>
-                <strong>{item.title}</strong>
-                <p className="muted small">
-                  {item.kind} • {item.pillar} • {item.status}
-                </p>
-                <button
-                  onClick={() => {
-                    setEditing(item);
-                    setMessage("");
-                  }}
-                >
-                  Edit
-                </button>
-              </div>
-            ))}
-          </section>
-        </div>
+        <ContentEditor items={initialContent} onMessage={setMessage} />
       ) : (
-        <div className="grid">
-          <section className="card">
-            <h3>{campaign.id ? "Edit" : "Create"} campaign</h3>
-            <label>
-              Title
-              <input
-                style={field}
-                value={campaign.title}
-                onChange={(e) => setCampaign({ ...campaign, title: e.target.value })}
-              />
-            </label>
-            <label>
-              Start date
-              <input
-                type="date"
-                style={field}
-                value={campaign.startDate}
-                onChange={(e) => setCampaign({ ...campaign, startDate: e.target.value })}
-              />
-            </label>
-            <label>
-              End date
-              <input
-                type="date"
-                style={field}
-                value={campaign.endDate}
-                onChange={(e) => setCampaign({ ...campaign, endDate: e.target.value })}
-              />
-            </label>
-            <label>
-              Audience
-              <select
-                style={field}
-                value={campaign.audience}
-                onChange={(e) =>
-                  setCampaign({ ...campaign, audience: e.target.value as Campaign["audience"] })
-                }
-              >
-                <option value="all">All members</option>
-                <option value="organizations">Selected organizations (future)</option>
-              </select>
-            </label>
-            <label>
-              Notification copy
-              <textarea
-                rows={3}
-                style={field}
-                value={campaign.notificationText}
-                onChange={(e) => setCampaign({ ...campaign, notificationText: e.target.value })}
-              />
-            </label>
-            <label>
-              Campaign status
-              <select
-                style={field}
-                value={campaign.status}
-                onChange={(e) =>
-                  setCampaign({ ...campaign, status: e.target.value as Campaign["status"] })
-                }
-              >
-                <option>draft</option>
-                <option>scheduled</option>
-              </select>
-            </label>
-            <p>
-              <button className="btn" disabled={busy} onClick={saveCampaign}>
-                Save campaign
-              </button>
-            </p>
-            <p className="muted small">
-              Scheduling is a planning field only. This prototype cannot deliver push or email
-              notifications.
-            </p>
-          </section>
-          <section className="card">
-            <h3>Campaigns ({campaigns.length})</h3>
-            {campaigns.map((item) => (
-              <div key={item.id} style={{ padding: "12px 0", borderBottom: "1px solid #41546a" }}>
-                <strong>{item.title}</strong>
-                <p className="muted small">
-                  {item.status} • {item.startDate || "No dates"}{" "}
-                  {item.endDate && "– " + item.endDate}
-                </p>
-                <p className="muted small">{item.notificationText}</p>
-                <button
-                  onClick={() => {
-                    setCampaign(item);
-                    setMessage("");
-                  }}
-                >
-                  Edit
-                </button>
-              </div>
-            ))}
-          </section>
-        </div>
+        <CampaignEditor items={initialCampaigns} onMessage={setMessage} />
       )}
     </div>
   );
