@@ -15,26 +15,36 @@ export async function serverClient() {
         try {
           items.forEach(({ name, value, options }) => jar.set(name, value, options));
         } catch {
-          /* Server Components cannot write cookies; actions handle refresh. */
+          // Server Components cannot write cookies. src/middleware.ts refreshes
+          // the session, so this is safe to ignore here.
         }
       },
     },
   });
 }
 
-export async function requireStudioAccess() {
+export type StudioAccess = "allowed" | "signed-out" | "forbidden";
+
+// Checks the session with Supabase (getUser, not getSession) and looks up the
+// platform role in the database. Never trust a role sent from the browser.
+export async function getStudioAccess(): Promise<StudioAccess> {
   const supabase = await serverClient();
   const {
     data: { user },
     error,
   } = await supabase.auth.getUser();
-  if (error || !user) return false;
+  if (error || !user) return "signed-out";
+
   const { data, error: roleError } = await supabase
     .from("platform_roles")
     .select("role")
     .eq("user_id", user.id)
     .eq("role", "platform_admin")
     .maybeSingle();
-  if (roleError) return false;
-  return Boolean(data);
+  if (roleError || !data) return "forbidden";
+  return "allowed";
+}
+
+export async function requireStudioAccess(): Promise<boolean> {
+  return (await getStudioAccess()) === "allowed";
 }
