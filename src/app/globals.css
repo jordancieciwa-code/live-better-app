@@ -1,1 +1,95 @@
-:root{font-family:Arial,Helvetica,sans-serif;color:#eaf2f7;background:#101b2a}*{box-sizing:border-box}body{margin:0}button{font:inherit;cursor:pointer}.shell{max-width:1100px;margin:auto;padding:30px 20px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px}.brand{font-weight:900;font-size:24px;letter-spacing:-1px}.brand span,.accent{color:#c8fb54}.muted{color:#aab8c9}.hero{background:linear-gradient(120deg,#223951,#14283c);border-radius:22px;padding:28px;margin:26px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}.card{background:#1d2d40;border:1px solid #35465a;border-radius:18px;padding:20px}.pill{display:inline-block;background:#344c2c;color:#d2ff83;padding:7px 12px;border-radius:999px;font-size:12px}.btn{background:#c8fb54;color:#102030;border:0;border-radius:10px;padding:12px 16px;font-weight:700}.progress{height:9px;background:#405066;border-radius:10px;overflow:hidden}.progress div{height:100%;background:#c8fb54}h1{font-size:clamp(32px,5vw,52px);margin:12px 0}h2{font-size:23px;margin-top:32px}a{color:#c8fb54}.small{font-size:13px}
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #eaf2f7;
+  background: #101b2a;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+}
+.shell {
+  max-width: 1100px;
+  margin: auto;
+  padding: 30px 20px;
+}
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.brand {
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: -1px;
+}
+.brand span,
+.accent {
+  color: #c8fb54;
+}
+.muted {
+  color: #aab8c9;
+}
+.hero {
+  background: linear-gradient(120deg, #223951, #14283c);
+  border-radius: 22px;
+  padding: 28px;
+  margin: 26px 0;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: #1d2d40;
+  border: 1px solid #35465a;
+  border-radius: 18px;
+  padding: 20px;
+}
+.pill {
+  display: inline-block;
+  background: #344c2c;
+  color: #d2ff83;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+.btn {
+  background: #c8fb54;
+  color: #102030;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-weight: 700;
+}
+.progress {
+  height: 9px;
+  background: #405066;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.progress div {
+  height: 100%;
+  background: #c8fb54;
+}
+h1 {
+  font-size: clamp(32px, 5vw, 52px);
+  margin: 12px 0;
+}
+h2 {
+  font-size: 23px;
+  margin-top: 32px;
+}
+a {
+  color: #c8fb54;
+}
+.small {
+  font-size: 13px;
+}
