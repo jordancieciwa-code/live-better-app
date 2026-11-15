@@ -6,6 +6,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Placeholder values so the smoke test can run the real auth code. A
+    # signed-out request never contacts Supabase, so nothing real is needed.
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -13,10 +18,21 @@ jobs:
           node-version: "22"
       # Switch to `npm ci` once package-lock.json is committed.
       - run: npm install
-      # Report known vulnerabilities in production dependencies. Not blocking
-      # yet; make it blocking once the current findings are resolved.
-      - run: npm audit --omit=dev
-        continue-on-error: true
+      # Fail on high or critical advisories in production dependencies.
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run format:check
       - run: npm run typecheck
       - run: npm run build
+      # next build can rewrite tsconfig.json and next-env.d.ts. Fail if it did,
+      # so those edits get committed instead of appearing on every laptop.
+      - run: git diff --exit-code
+      - name: Smoke test the production server
+        run: |
+          npm start -- --port 3000 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000 >/dev/null && break; sleep 1; done
+          curl -sf http://localhost:3000/ | grep -q "YOUR VERY BEST"
+          curl -sf http://localhost:3000/login | grep -q "Team sign in"
+          # Signed-out visitors must be sent to /login (proxy + server auth check).
+          studio=$(curl -s -o /dev/null -w "%{http_code} %{redirect_url}" http://localhost:3000/studio)
+          echo "GET /studio -> $studio"
+          [[ "$studio" =~ ^30[37]\ .*/login$ ]]

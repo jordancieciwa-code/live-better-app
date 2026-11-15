@@ -19,7 +19,7 @@ export async function serverClient() {
         try {
           items.forEach(({ name, value, options }) => jar.set(name, value, options));
         } catch {
-          // Server Components cannot write cookies. src/middleware.ts refreshes
+          // Server Components cannot write cookies. src/proxy.ts refreshes
           // the session, so this is safe to ignore here.
         }
       },
