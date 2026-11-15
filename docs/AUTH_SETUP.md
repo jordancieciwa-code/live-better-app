@@ -19,8 +19,8 @@ yet.
 
 ## How sessions work
 
-- `src/middleware.ts` refreshes the Supabase session on /studio and /login and writes updated cookies.
-  Without it, admins are logged out when the access token expires (about an hour). Add any new
+- `src/proxy.ts` refreshes the Supabase session on /studio and /login and writes updated cookies.
+  It runs on the Node.js runtime. Without it, admins are logged out when the access token expires (about an hour). Add any new
   protected route to its `matcher`.
 - `getStudioAccess()` in src/lib/auth/server.ts uses `getUser()` (validated by Supabase, unlike
   `getSession()`) and looks the role up in the database.

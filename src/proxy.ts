@@ -3,10 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { CookieToSet } from "@/lib/auth/server";
 
 // Server Components cannot write cookies, so an expired Supabase access token
-// would never be saved after refresh. This middleware refreshes the session on
-// every protected request and writes the new cookies to the response.
-// Based on the standard @supabase/ssr Next.js setup.
-export async function middleware(request: NextRequest) {
+// would never be saved after refresh. This proxy (Next.js 16's name for
+// middleware) refreshes the session on every protected request and writes the
+// new cookies to the response. Based on the standard @supabase/ssr setup.
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

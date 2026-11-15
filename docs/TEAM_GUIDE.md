@@ -8,7 +8,7 @@
 - `src/features/corporate`: employer reporting (future)
 - `src/features/trainers`: trainer validation (future)
 - `src/features/studio`: admin content and campaign studio
-- `src/lib/auth` and `src/middleware.ts`: authentication and access checks; security review required
+- `src/lib/auth` and `src/proxy.ts`: authentication and access checks; security review required
 - `supabase/migrations`: database schema and RLS policies; security review required
 - `src/app`: routing, global styling and application shell; review required
 
