@@ -1,5 +1,9 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
+
+// Written out explicitly: TypeScript cannot infer this parameter from
+// createServerClient's overloads, and strict mode rejects an implicit any.
+export type CookieToSet = { name: string; value: string; options: CookieOptions };
 
 export async function serverClient() {
   const jar = await cookies();
@@ -11,7 +15,7 @@ export async function serverClient() {
       getAll() {
         return jar.getAll();
       },
-      setAll(items) {
+      setAll(items: CookieToSet[]) {
         try {
           items.forEach(({ name, value, options }) => jar.set(name, value, options));
         } catch {
